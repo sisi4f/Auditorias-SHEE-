@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shee · Auditorias · Plano de Ação</title>
+<style>
+:root {
+  /* ── Paleta Slate/Corporate ── */
+  --bg:       #F1F3F7;      /* fundo geral — cinzento muito claro */
+  --surface:  #FFFFFF;      /* cards, tabelas */
+  --surface2: #F7F8FB;      /* inputs, headers de tabela */
+  --border:   #E2E6EE;      /* bordas subtis */
+  --accent:   #2C4A6E;      /* slate-navy — accent principal */
+  --accent2:  #1E3554;      /* hover/active mais escuro */
+  --accent-light: #EBF0F8;  /* backgrounds subtis de accent */
+  --sky:      #DEEAF8;      /* highlight muito suave */
+
+  /* ── Header ── */
+  --header-bg:    #1C2B3A;  /* grafite-azulado escuro */
+  --header-bg2:   #243447;  /* barra de farmácias ligeiramente mais clara */
+
+  /* ── Semânticas — mais suaves, sem fills chocantes ── */
+  --danger:   #B91C1C;
+  --danger-bg:#FEF2F2;
+  --danger-bd:#FECACA;
+  --warn:     #92400E;
+  --warn-bg:  #FFFBEB;
+  --warn-bd:  #FDE68A;
+  --ok:       #166534;
+  --ok-bg:    #F0FDF4;
+  --ok-bd:    #BBF7D0;
+
+  /* ── Tipografia ── */
+  --text:     #1A2332;
+  --muted:    #64748B;
+  --muted2:   #94A3B8;
+
+  --fh:'Aptos Display','Aptos','Segoe UI',system-ui,sans-serif;
+  --fb:'Aptos','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh}
+
+/* ── PHARMACY BAR ── */
+.pharma-bar{background:var(--header-bg2);padding:.5rem 2rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;min-height:46px}
+.pharma-bar-label{font-size:.65rem;color:#7A94B0;font-family:var(--fh);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.pharma-chips{display:flex;gap:.35rem;flex-wrap:wrap;flex:1}
+.pharma-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#B8CCDF;padding:.28rem .8rem;border-radius:4px;font-size:.74rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:var(--fb);letter-spacing:.01em}
+.pharma-chip:hover{background:rgba(255,255,255,.14);color:#E2EDF6}
+.pharma-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 1px 4px rgba(44,74,110,.4)}
+.pharma-chip .chip-badge{display:inline-block;background:rgba(0,0,0,.2);border-radius:3px;padding:0 5px;font-size:.62rem;margin-left:4px;font-weight:700}
+.pharma-chip.active .chip-badge{background:rgba(255,255,255,.2)}
+.btn-new-pharma{background:transparent;border:1px dashed rgba(255,255,255,.25);color:#7A94B0;padding:.28rem .7rem;border-radius:4px;font-size:.74rem;cursor:pointer;transition:all .15s;font-family:var(--fb);white-space:nowrap}
+.btn-new-pharma:hover{border-color:rgba(255,255,255,.5);color:#B8CCDF}
+
+/* ── HEADER ── */
+.header{background:var(--header-bg);color:#fff;padding:1.1rem 2rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.header-title h1{font-family:var(--fh);font-size:1.45rem;font-weight:600;color:#E8F0F8;letter-spacing:-.01em}
+.header-title p{color:#6B849E;font-size:.74rem;margin-top:.2rem;font-weight:400}
+.header-stats{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:.4rem .8rem;border-radius:6px;text-align:center;min-width:66px}
+.stat .n{font-family:var(--fh);font-size:1.25rem;font-weight:700;line-height:1.2}
+.stat .l{font-size:.58rem;color:#6B849E;text-transform:uppercase;letter-spacing:.08em;margin-top:.15rem}
+.stat.nc .n{color:#FCA5A5}
+.stat.ec .n{color:#FCD34D}
+.stat.oks .n{color:#86EFAC}
+.stat.dn  .n{color:#6EE7B7}
+
+/* ── SYNCBAR ── */
+.syncbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.5rem 2rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.sync-status{display:flex;align-items:center;gap:.4rem;font-size:.73rem;color:var(--muted);margin-right:auto}
+.sdot{width:7px;height:7px;border-radius:50%;background:#CBD5E1;flex-shrink:0}
+.sdot.ok{background:#22C55E;box-shadow:0 0 4px #22c55e66}
+.sdot.err{background:var(--danger)}
+.sdot.spin2{background:#F59E0B;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.btn{font-family:var(--fb);font-size:.76rem;font-weight:500;padding:.35rem .85rem;border-radius:5px;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:var(--surface);color:var(--text)}
+.btn:hover{background:var(--surface2);border-color:#CBD5E1}
+.btn-green{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-green:hover{background:var(--accent2)}
+.btn-lime{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}.btn-lime:hover{background:var(--accent2)}
+.btn-danger{color:var(--danger);border-color:var(--danger-bd)}.btn-danger:hover{background:var(--danger-bg)}
+.btn-sm{padding:.2rem .5rem;font-size:.68rem}
+
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 2rem;background:var(--surface)}
+.tab{padding:.75rem 1.2rem;font-size:.77rem;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:var(--fb);letter-spacing:.01em}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab:hover:not(.active){color:var(--text)}
+
+/* ── MAIN ── */
+.main{padding:1.5rem 2rem}
+
+/* ── EMPTY STATE ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;text-align:center;gap:.85rem}
+.empty-state .icon{font-size:2.5rem;opacity:.4}
+.empty-state h2{font-family:var(--fh);color:var(--text);font-size:1.15rem;font-weight:600}
+.empty-state p{color:var(--muted);font-size:.82rem;max-width:340px;line-height:1.6}
+
+/* ── GANTT ── */
+.gantt-controls{display:flex;gap:.6rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap}
+.fsel{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:.3rem .6rem;border-radius:5px;font-size:.76rem;font-family:var(--fb)}
+.gwrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(28,43,58,.05)}
+table.gt{width:100%;border-collapse:collapse;min-width:900px;background:var(--surface)}
+table.gt thead th{font-family:var(--fb);font-size:.64rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;background:var(--surface2);border-bottom:1px solid var(--border);padding:.5rem .7rem;text-align:left;white-space:nowrap}
+table.gt tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+table.gt tbody tr:hover{background:#F7F9FC}
+table.gt td{padding:.48rem .7rem;font-size:.79rem;vertical-align:middle}
+
+/* Area tags — tons pastéis neutros, não colorem demais */
+.atag{display:inline-block;padding:.15rem .48rem;border-radius:3px;font-size:.63rem;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.a-fr{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.a-bk{background:#FFF7ED;color:#9A3412;border:1px solid #FED7AA}
+.a-in{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0}
+.a-eq{background:#FAF5FF;color:#6B21A8;border:1px solid #E9D5FF}
+.a-hi{background:#F0F9FF;color:#0C4A6E;border:1px solid #BAE6FD}
+
+/* Status tags — texto legível, sem fills pesados */
+.stag{display:inline-block;padding:.13rem .45rem;border-radius:3px;font-size:.63rem;font-weight:600;white-space:nowrap}
+.s-nc{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-bd)}
+.s-ec{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}
+.s-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+.s-dn{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+
+/* Priority tags */
+.ptag{display:inline-block;padding:.1rem .38rem;border-radius:3px;font-size:.63rem;font-weight:600}
+.p-A{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-bd)}
+.p-M{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}
+.p-B{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+input.il{background:transparent;border:1px solid transparent;color:var(--text);font-family:var(--fb);font-size:.79rem;padding:.2rem .4rem;border-radius:4px;width:100%;transition:border .15s}
+input.il:focus{outline:none;border-color:var(--accent);background:var(--accent-light)}
+input[type=date].il{font-size:.73rem;min-width:115px}
+select.il{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--fb);font-size:.76rem;padding:.2rem .4rem;border-radius:4px;width:100%}
+.bwrap{position:relative;width:130px;height:13px;background:var(--surface2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.bar{height:100%;border-radius:3px;transition:width .4s}
+.blbl{position:absolute;right:3px;top:0;height:100%;display:flex;align-items:center;font-size:.6rem;color:var(--muted2);font-family:var(--fb)}
+.pthumb{width:32px;height:32px;object-fit:cover;border-radius:3px;border:1px solid var(--border);cursor:pointer}
+.pcnt{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:.63rem;font-weight:600;color:var(--muted);cursor:pointer}
+.pcnt:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ── CHECKLIST ── */
+.agroup{margin-bottom:1.6rem}
+.ahdr{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;padding-bottom:.45rem;border-bottom:1px solid var(--border)}
+.ahdr h3{font-family:var(--fh);font-size:1rem;font-weight:600;color:var(--text)}
+.acnt{font-size:.67rem;color:var(--muted);background:var(--surface2);padding:.1rem .42rem;border-radius:3px;border:1px solid var(--border)}
+.icard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.85rem .95rem;margin-bottom:.45rem;display:grid;grid-template-columns:1fr auto;gap:.65rem;align-items:start;transition:box-shadow .15s}
+.icard:hover{box-shadow:0 2px 8px rgba(28,43,58,.07)}
+.icard.nc{border-left:3px solid var(--danger)}
+.icard.ec{border-left:3px solid #F59E0B}
+.icard.ok,.icard.done{border-left:3px solid #22C55E;opacity:.72}
+.iname{font-weight:600;font-size:.83rem;margin-bottom:.22rem;color:var(--text)}
+.iobs{font-size:.74rem;color:var(--muted);line-height:1.5}
+.imeta{display:flex;gap:.4rem;align-items:center;margin-top:.4rem;flex-wrap:wrap}
+.iphotos{display:flex;gap:4px;flex-wrap:wrap;margin-top:.4rem}
+
+/* ── TIMELINE ── */
+.tl-wrap{overflow-x:auto}
+.tlt{border-collapse:collapse;min-width:880px;width:100%}
+.tlt th{font-family:var(--fb);font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;background:var(--surface2);border:1px solid var(--border);padding:.35rem .25rem;text-align:center;white-space:nowrap}
+.tlt .rl{font-size:.71rem;padding:.3rem .65rem;white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface)}
+.tlt .dc{border-bottom:1px solid #F1F3F7;padding:2px 1px}
+.tlbar{height:14px;border-radius:2px;margin:1px}
+
+/* ── CONFIG ── */
+.cpanel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.1rem;box-shadow:0 1px 4px rgba(28,43,58,.04)}
+.cpanel h3{font-family:var(--fh);font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem}
+.cfield label{display:block;font-size:.67rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.cfield input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.45rem .65rem;border-radius:6px;font-family:var(--fb);font-size:.8rem}
+.cfield input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(44,74,110,.1)}
+.cnote{font-size:.72rem;color:var(--muted);margin-top:.65rem;line-height:1.55;background:var(--ok-bg);padding:.65rem;border-radius:5px;border-left:2px solid var(--ok)}
+.cnote a{color:var(--ok)}
+.ccode{background:#0F172A;color:#93C5FD;border-radius:7px;padding:.9rem;font-size:.69rem;font-family:monospace;line-height:1.6;margin-top:.6rem;white-space:pre-wrap;overflow-x:auto}
+
+/* ── OVERVIEW ── */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:.85rem;margin-bottom:1.75rem}
+.pharma-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.15rem;cursor:pointer;transition:all .18s;position:relative;box-shadow:0 1px 3px rgba(28,43,58,.05)}
+.pharma-card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(44,74,110,.1);transform:translateY(-1px)}
+.pharma-card.active-card{border-color:var(--accent);box-shadow:0 0 0 2px rgba(44,74,110,.15)}
+.pharma-card h4{font-family:var(--fh);font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+.pharma-card .audit-date{font-size:.69rem;color:var(--muted);margin-bottom:.6rem}
+.pharma-mini-stats{display:flex;gap:.4rem;flex-wrap:wrap}
+.mini-stat{font-size:.67rem;padding:.14rem .45rem;border-radius:3px;font-weight:600;border:1px solid transparent}
+.ms-nc{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bd)}
+.ms-ec{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
+.ms-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.pharma-card-actions{position:absolute;top:.65rem;right:.65rem;display:flex;gap:.3rem}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:12px;padding:1.6rem;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 50px rgba(15,23,42,.2)}
+.modal h3{font-family:var(--fh);color:var(--text);margin-bottom:1rem;font-size:1.05rem;font-weight:600}
+.fg{margin-bottom:.8rem}
+.fg label{display:block;font-size:.67rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.45rem .65rem;border-radius:6px;font-family:var(--fb);font-size:.81rem}
+.fg textarea{resize:vertical;min-height:58px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(44,74,110,.1)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.mactions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.3rem}
+.pua{border:1.5px dashed var(--border);border-radius:7px;padding:.85rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.pua:hover{border-color:var(--accent);background:var(--accent-light)}
+.pua input{display:none}
+.uprevs{display:flex;gap:5px;flex-wrap:wrap;margin-top:.6rem}
+.uprv{position:relative}
+.uprv img{width:54px;height:54px;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
+.uprv .rm{position:absolute;top:-5px;right:-5px;width:16px;height:16px;background:var(--danger);color:#fff;border-radius:50%;font-size:.55rem;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700}
+
+/* ── LIGHTBOX ── */
+.lbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:.85rem}
+.lbox.open{display:flex}
+.lbox img{max-width:90vw;max-height:80vh;border-radius:6px;object-fit:contain}
+.lbox-x{position:fixed;top:1.2rem;right:1.6rem;color:#fff;font-size:1.75rem;cursor:pointer;opacity:.7}
+.lbox-x:hover{opacity:1}
+.lnav{display:flex;gap:.85rem;align-items:center}
+.lnav button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:.35rem .85rem;border-radius:5px;cursor:pointer;font-size:.9rem}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--accent);color:#fff;padding:.5rem 1rem;border-radius:6px;font-size:.76rem;font-weight:500;font-family:var(--fb);opacity:0;transition:opacity .25s;pointer-events:none;z-index:400;box-shadow:0 4px 12px rgba(44,74,110,.3)}
+.toast.show{opacity:1}.toast.err{background:var(--danger)}
+
+/* ── PHARMA MODAL ── */
+.pharma-modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.pharma-modal-overlay.open{display:flex}
+.pharma-modal{background:var(--surface);border-radius:12px;padding:1.75rem;width:92%;max-width:420px;box-shadow:0 20px 50px rgba(15,23,42,.22)}
+.pharma-modal h3{font-family:var(--fh);color:var(--text);font-size:1.1rem;font-weight:600;margin-bottom:1.15rem}
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.45rem}
+.tpl-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;padding:.65rem .75rem;cursor:pointer;transition:all .15s;text-align:left}
+.tpl-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.tpl-btn.selected{border-color:var(--accent);background:var(--sky)}
+.tpl-btn .tpl-name{font-weight:600;font-size:.8rem;color:var(--text)}
+.tpl-btn .tpl-desc{font-size:.68rem;color:var(--muted);margin-top:.18rem;line-height:1.4}
+
+.hidden{display:none!important}
+@media print{
+  .pharma-bar,.syncbar,.tabs,.gantt-controls,.cpanel,.overlay,.lbox,.toast,.no-print{display:none!important}
+  .header{background:var(--header-bg)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .main{padding:0}
+  #tab-checklist{display:block!important}
+  #tab-gantt,#tab-timeline,#tab-config,#tab-overview{display:none!important}
+  .icard{break-inside:avoid}
+}
+@media(max-width:700px){
+  .pharma-bar,.header,.syncbar,.tabs,.main{padding-left:1rem;padding-right:1rem}
+  .frow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- PHARMACY SWITCHER -->
+<div class="pharma-bar" id="pharma-bar">
+  <span class="pharma-bar-label">Farmácia</span>
+  <div class="pharma-chips" id="pharma-chips"></div>
+  <button class="btn-new-pharma" onclick="openNewPharma()">+ Nova Farmácia</button>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title">
+    <h1 id="hdr-title">Plano de Ação · Auditorias</h1>
+    <p id="hdr-sub">Seleciona ou cria uma farmácia para começar</p>
+  </div>
+  <div class="header-stats">
+    <div class="stat nc"><div class="n" id="s-nc">—</div><div class="l">Não Conf.</div></div>
+    <div class="stat ec"><div class="n" id="s-ec">—</div><div class="l">Em Curso</div></div>
+    <div class="stat oks"><div class="n" id="s-ok">—</div><div class="l">Conformes</div></div>
+    <div class="stat dn"><div class="n" id="s-done">—</div><div class="l">Concluídas</div></div>
+  </div>
+</div>
+
+<!-- SYNCBAR -->
+<div class="syncbar">
+  <div class="sync-status"><div class="sdot" id="sdot"></div><span id="smsg">Sem farmácia selecionada</span></div>
+  <button class="btn no-print" onclick="syncNow()" id="btn-sync" disabled>↻ Sincronizar</button>
+  <button class="btn no-print" onclick="exportJSON()">⬇ Backup JSON</button>
+  <label class="btn no-print" style="cursor:pointer">⬆ Importar JSON<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
+  <button class="btn btn-lime no-print" onclick="exportPDF()">⎙ PDF</button>
+</div>
+
+<!-- TABS -->
+<div class="tabs no-print">
+  <div class="tab active" onclick="showTab('overview')">🏪 Farmácias</div>
+  <div class="tab" onclick="showTab('gantt')">📊 Gantt</div>
+  <div class="tab" onclick="showTab('checklist')">✅ Checklist</div>
+  <div class="tab" onclick="showTab('timeline')">📅 Timeline</div>
+  <div class="tab" onclick="showTab('config')">⚙ Configuração</div>
+</div>
+
+<div class="main">
+
+<!-- OVERVIEW TAB -->
+<div id="tab-overview">
+  <div id="overview-empty" class="empty-state hidden">
+    <div class="icon">🏪</div>
+    <h2>Nenhuma farmácia ainda</h2>
+    <p>Clica em <strong>+ Nova Farmácia</strong> para criar a primeira auditoria.</p>
+    <button class="btn btn-green" onclick="openNewPharma()" style="margin-top:.5rem">+ Nova Farmácia</button>
+  </div>
+  <div class="overview-grid" id="overview-grid"></div>
+</div>
+
+<!-- GANTT TAB -->
+<div id="tab-gantt" class="hidden">
+  <div id="gantt-empty" class="empty-state hidden">
+    <div class="icon">📊</div><h2>Seleciona uma farmácia</h2>
+    <p>Escolhe uma farmácia na barra superior para ver o seu Gantt.</p>
+  </div>
+  <div id="gantt-content">
+    <div class="gantt-controls no-print">
+      <select class="fsel" onchange="renderGantt()" id="f-area"><option value="">Todas as áreas</option><option>Frontoffice</option><option>Backoffice</option><option>Infraestrutura</option><option>Equipamento</option><option>Higiene</option></select>
+      <select class="fsel" onchange="renderGantt()" id="f-status"><option value="">Todos os estados</option><option value="NC">Não Conforme</option><option value="EC">Em Curso</option><option value="DONE">Concluído</option></select>
+      <select class="fsel" onchange="renderGantt()" id="f-prio"><option value="">Todas as prioridades</option><option>Alta</option><option>Média</option><option>Baixa</option></select>
+      <button class="btn btn-green" onclick="openAdd()">+ Adicionar tarefa</button>
+    </div>
+    <div class="gwrap">
+      <table class="gt"><thead><tr>
+        <th style="width:130px">Área</th><th style="width:195px">Item</th>
+        <th style="width:92px">Estado</th><th style="width:62px">Prior.</th>
+        <th style="width:128px">Responsável</th><th style="width:120px">Prazo</th>
+        <th style="width:65px">€</th><th style="width:168px">Progresso</th>
+        <th style="width:68px">Fotos</th><th style="width:68px" class="no-print">Ações</th>
+      </tr></thead><tbody id="gantt-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKLIST TAB -->
+<div id="tab-checklist" class="hidden"><div id="checklist-body"></div></div>
+
+<!-- TIMELINE TAB -->
+<div id="tab-timeline" class="hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+    <h2 style="font-family:var(--fh);font-size:1.1rem;color:var(--accent)" id="tl-title">Timeline</h2>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <span class="atag a-fr">Frontoffice</span><span class="atag a-bk">Backoffice</span>
+      <span class="atag a-in">Infraestrutura</span><span class="atag a-eq">Equipamento</span><span class="atag a-hi">Higiene</span>
+    </div>
+  </div>
+  <div class="tl-wrap"><table class="tlt" id="tlt"></table></div>
+</div>
+
+<!-- CONFIG TAB -->
+<div id="tab-config" class="hidden">
+  <div class="cpanel">
+    <h3>⚙ Apps Script — sincronização gratuita</h3>
+    <p style="font-size:.82rem;color:var(--muted);line-height:1.65;margin-bottom:1rem">Sem API Key, sem cartão de crédito. Um único Apps Script sincroniza <strong>todas as farmácias</strong> — cada uma fica numa aba separada da mesma Google Sheet.</p>
+
+    <div style="border:1.5px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.85rem">
+      <div style="font-family:var(--fh);font-weight:700;font-size:.88rem;color:var(--accent);margin-bottom:.65rem">Passo 1 · Criar a Google Sheet</div>
+      <ol style="font-size:.78rem;color:var(--muted);line-height:1.85;padding-left:1.1rem">
+        <li>Vai a <a href="https://sheets.google.com" target="_blank" style="color:var(--ok)">sheets.google.com</a> e cria uma Sheet nova</li>
+        <li>Dá o nome que quiseres (ex: "Auditorias Farmácias 2026")</li>
+        <li>Não precisas de criar cabeçalhos — o script cria as abas automaticamente</li>
+      </ol>
+    </div>
+
+    <div style="border:1.5px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.85rem">
+      <div style="font-family:var(--fh);font-weight:700;font-size:.88rem;color:var(--accent);margin-bottom:.65rem">Passo 2 · Apps Script</div>
+      <ol style="font-size:.78rem;color:var(--muted);line-height:1.85;padding-left:1.1rem">
+        <li>Na Sheet: <strong>Extensões → Apps Script</strong></li>
+        <li>Apaga o código existente e cola o código abaixo</li>
+        <li><strong>Guardar → Implementar → Nova implementação</strong></li>
+        <li>Tipo: <strong>Aplicação Web</strong> · Executar como: <strong>Eu</strong> · Acesso: <strong>Qualquer pessoa</strong></li>
+        <li>Copia o URL gerado</li>
+      </ol>
+      <div class="ccode">const HEADERS = ['id','area','name','obs','status','prio','resp','start','end','cost','prog','photos','lastEdit','editBy','created','notes'];
+
+function doGet(e) {
+  const sheetName = e.parameter.sheet || 'Sheet1';
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(sheetName);
+  if (!sh) {
+    // Return list of all sheet names for overview
+    const names = ss.getSheets().map(s => s.getName());
+    return json({ ok: true, sheets: names, rows: [] });
+  }
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) return json({ ok: true, rows: [] });
+  const rows = data.slice(1).map(r => {
+    const obj = {};
+    HEADERS.forEach((h, i) => obj[h] = r[i] !== undefined ? String(r[i]) : '');
+    return obj;
+  });
+  return json({ ok: true, rows });
+}
+
+function doPost(e) {
+  try {
+    const p = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheetName = p.sheet || 'Sheet1';
+    let sh = ss.getSheetByName(sheetName);
+    if (!sh) sh = ss.insertSheet(sheetName);
+    if (p.action === 'init') {
+      sh.clearContents();
+      sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+      sh.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
+    }
+    if (p.action === 'write' && p.rows) {
+      const last = sh.getLastRow();
+      if (last > 1) sh.deleteRows(2, last - 1);
+      if (p.rows.length > 0)
+        sh.getRange(2, 1, p.rows.length, p.rows[0].length).setValues(p.rows);
+    }
+    if (p.action === 'delete') {
+      ss.deleteSheet(sh);
+    }
+    return json({ ok: true });
+  } catch(err) {
+    return json({ ok: false, error: err.message });
+  }
+}
+
+function json(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}</div>
+    </div>
+
+    <div style="border:1.5px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.85rem">
+      <div style="font-family:var(--fh);font-weight:700;font-size:.88rem;color:var(--accent);margin-bottom:.65rem">Passo 3 · Colar o URL</div>
+      <div class="cfield">
+        <label>URL do Apps Script</label>
+        <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/…/exec">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;margin-top:.85rem">
+      <button class="btn btn-green" onclick="saveConfig()">💾 Guardar e ativar</button>
+      <button class="btn" onclick="testConn()">🔗 Testar ligação</button>
+      <span id="test-res" style="font-size:.78rem;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div class="cpanel">
+    <h3>🛡 Integridade de Dados</h3>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.85rem;line-height:1.65">
+      O app guarda automaticamente <strong>backups locais rotativos</strong> (últimas 3 versões por farmácia, a cada 5 minutos de edição).<br>
+      A Google Sheet funciona como <strong>cópia de segurança remota permanente</strong> — mesmo que percas o browser local, os dados estão na Sheet.<br><br>
+      <strong>Garantias de colaboração:</strong><br>
+      · Merge inteligente por <em>lastEdit</em> — ganha sempre a versão mais recente, campo a campo<br>
+      · Notificação visual quando um colega atualizou tarefas desde a última sincronização<br>
+      · Campo <em>editBy</em> regista quem fez cada alteração<br>
+      · Sincronização automática a cada 60 segundos quando o Apps Script está configurado
+    </p>
+    <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem">
+      <button class="btn" onclick="showStorageInfo()">📊 Ver espaço usado</button>
+      <button class="btn" onclick="showBackupList()">🕓 Restaurar backup</button>
+      <span id="storage-info" style="font-size:.76rem;color:var(--muted)"></span>
+    </div>
+    <div id="backup-list" style="display:none;margin-top:.65rem"></div>
+  </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Usado para registar quem fez cada alteração.</p>
+    <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap">
+      <input type="text" id="cfg-user" placeholder="Ex: Maria F." style="background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:.48rem .7rem;border-radius:7px;font-family:var(--fb);font-size:.83rem;max-width:200px">
+      <button class="btn btn-green" onclick="saveUser()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TASK MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Nova Tarefa</h3>
+    <input type="hidden" id="eid">
+    <div class="fg"><label>Área</label>
+      <select id="f-area-m"><option>Frontoffice</option><option>Backoffice</option><option>Infraestrutura</option><option>Equipamento</option><option>Higiene</option></select>
+    </div>
+    <div class="fg"><label>Item / Tarefa</label><input type="text" id="f-name"></div>
+    <div class="fg"><label>Observação</label><textarea id="f-obs"></textarea></div>
+    <div class="frow">
+      <div class="fg"><label>Estado</label>
+        <select id="f-status-m"><option value="NC">Não Conforme</option><option value="EC">Em Curso</option><option value="OK">Conforme</option><option value="DONE">✓ Concluído</option></select>
+      </div>
+      <div class="fg"><label>Prioridade</label>
+        <select id="f-prio-m"><option>Alta</option><option>Média</option><option>Baixa</option></select>
+      </div>
+    </div>
+    <div class="fg"><label>Responsável</label><input type="text" id="f-resp" placeholder="Nome ou cargo"></div>
+    <div class="frow">
+      <div class="fg"><label>Início</label><input type="date" id="f-start"></div>
+      <div class="fg"><label>Prazo</label><input type="date" id="f-end"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Custo (€)</label><input type="number" id="f-cost" placeholder="0" min="0"></div>
+      <div class="fg"><label>Progresso: <span id="pval">0%</span></label>
+        <input type="range" id="f-prog" min="0" max="100" step="5" value="0" oninput="document.getElementById('pval').textContent=this.value+'%'" style="width:100%;accent-color:var(--accent);margin-top:.45rem">
+      </div>
+    </div>
+    <div class="fg">
+      <label>Fotos (máx. 5)</label>
+      <div class="pua" onclick="document.getElementById('photo-in').click()">
+        <div style="font-size:.8rem;color:var(--muted)">📷 Clica para adicionar fotos</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.18rem">JPG, PNG · Redimensionadas automaticamente</div>
+        <input type="file" id="photo-in" accept="image/*" multiple onchange="handlePhotos(event)">
+      </div>
+      <div class="uprevs" id="uprevs"></div>
+    </div>
+    <div class="fg"><label>Notas</label><textarea id="f-notes" placeholder="Fornecedores, contactos, observações…"></textarea></div>
+    <div class="mactions">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="saveTask()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PHARMACY MODAL -->
+<div class="pharma-modal-overlay" id="pharma-modal">
+  <div class="pharma-modal">
+    <h3 id="pm-title">Nova Farmácia</h3>
+    <input type="hidden" id="pm-edit-id">
+    <div class="fg"><label>Nome da Farmácia</label><input type="text" id="pm-name" placeholder="Ex: Farmácia Central, FCB, …"></div>
+    <div class="fg"><label>Localização (opcional)</label><input type="text" id="pm-loc" placeholder="Ex: Lisboa, Porto…"></div>
+    <div class="fg"><label>Data da auditoria</label><input type="date" id="pm-date"></div>
+    <div class="fg">
+      <label>Iniciar com</label>
+      <div class="template-grid" id="tpl-grid">
+        <div class="tpl-btn selected" data-tpl="checklist41" onclick="selectTpl(this)">
+          <div class="tpl-name">✅ Checklist completo</div>
+          <div class="tpl-desc">41 itens padrão das 5 áreas (sem observações)</div>
+        </div>
+        <div class="tpl-btn" data-tpl="empty" onclick="selectTpl(this)">
+          <div class="tpl-name">📄 Em branco</div>
+          <div class="tpl-desc">Começa com lista vazia</div>
+        </div>
+      </div>
+    </div>
+    <div class="mactions">
+      <button class="btn" onclick="closePharmaModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="savePharma()">Criar Farmácia</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lbox" id="lbox" onclick="closeLb()">
+  <div class="lbox-x" onclick="closeLb()">×</div>
+  <img id="lb-img" src="" alt="">
+  <div class="lnav" onclick="event.stopPropagation()">
+    <button onclick="lbPrev()">← Anterior</button>
+    <span id="lb-cnt" style="color:#aaa;font-size:.78rem"></span>
+    <button onclick="lbNext()">Próxima →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ══════════════════════════════════════════════════════
+const LS_META  = 'audit26_meta';   // { pharmacies:[{id,name,loc,date}], cfg:{} }
+const LS_PFX   = 'audit26_ph_';   // + pharmacyId → { tasks, nextId }
+
+let pharmacies = [];  // [{id, name, loc, date}]
+let currentPhId = null;
+let tasks = [];
+let nextId = 100;
+let cfg = { scriptUrl:'', username:'Utilizador' };
+let pendingPhotos = [];
+let lbPhotos = []; let lbIdx = 0;
+let syncTimer = null;
+let selectedTpl = 'checklist41';
+
+// ── CHECKLIST TEMPLATE (41 items, no observations) ─────
+const CHECKLIST_TPL = [
+  {area:'Frontoffice',name:'Iluminação funcional e decorativa'},{area:'Frontoffice',name:'Pintura das paredes'},
+  {area:'Frontoffice',name:'Sinalética (WC, serviços, campanhas)'},{area:'Frontoffice',name:'Temperatura ambiente adequada'},
+  {area:'Frontoffice',name:'Ruído controlado'},{area:'Frontoffice',name:'Aromatização suave'},
+  {area:'Frontoffice',name:'Número de balcões suficiente'},{area:'Frontoffice',name:'Estado dos balcões'},
+  {area:'Frontoffice',name:'Expositores de impulso nos balcões'},{area:'Frontoffice',name:'Equipamento informático (PC/POS)'},
+  {area:'Frontoffice',name:'Gavetas/armários organizados'},{area:'Frontoffice',name:'Espaço GAP — atendimento privado'},
+  {area:'Frontoffice',name:'Lineares suficientes e em bom estado'},{area:'Frontoffice',name:'Réguas de preço'},
+  {area:'Frontoffice',name:'Iluminação dos lineares'},{area:'Frontoffice',name:'Expositores limpos, sem excesso'},
+  {area:'Frontoffice',name:'Materiais de comunicação PDV'},{area:'Frontoffice',name:'Espaço campanhas sazonais'},
+  {area:'Frontoffice',name:'Acessibilidade na entrada'},{area:'Frontoffice',name:'Corredores com largura suficiente'},
+  {area:'Frontoffice',name:'CCTV funcional'},{area:'Frontoffice',name:'Extintores dentro do prazo'},
+  {area:'Frontoffice',name:'Tapetes no chão em condições'},{area:'Frontoffice',name:'Ausência de publicidade deteriorada'},
+  {area:'Frontoffice',name:'Gôndolas'},
+  {area:'Backoffice',name:'Iluminação adequada no armazém'},{area:'Backoffice',name:'Prateleiras estáveis e fixas'},
+  {area:'Backoffice',name:'Organização por categorias'},{area:'Backoffice',name:'Zona de quarentena identificada'},
+  {area:'Backoffice',name:'Controlo de pragas atualizado'},{area:'Backoffice',name:'Climatização adequada'},
+  {area:'Backoffice',name:'Otimização/ampliação do armazém'},{area:'Backoffice',name:'Pontos de água e esgotos funcionais'},
+  {area:'Backoffice',name:'Escritório DT'},{area:'Backoffice',name:'Mobiliário funcional'},
+  {area:'Backoffice',name:'Zona de preparação de encomendas'},{area:'Backoffice',name:'Sistemas informáticos de apoio'},
+  {area:'Backoffice',name:'Área de pessoal: copa/refeitório'},{area:'Backoffice',name:'WC e vestiários adequados'},
+  {area:'Infraestrutura',name:'Instalação elétrica segura'},{area:'Infraestrutura',name:'Cablagem organizada'},
+  {area:'Infraestrutura',name:'Rede Wi-Fi estável'},{area:'Infraestrutura',name:'Necessidades de pintura'},
+  {area:'Infraestrutura',name:'Necessidades de revestimentos'},{area:'Infraestrutura',name:'Necessidades de pavimentos'},
+  {area:'Infraestrutura',name:'Portas e janelas em bom estado'},{area:'Infraestrutura',name:'Humidades/infiltrações inexistentes'},
+  {area:'Equipamento',name:'Cadeiras/secretárias em bom estado'},{area:'Equipamento',name:'Equipamento obsoleto a substituir'},
+  {area:'Equipamento',name:'Impressoras/POS/leitores funcionais'},{area:'Equipamento',name:'Computadores atualizados'},
+  {area:'Equipamento',name:'Máquina de etiquetas de linear'},
+  {area:'Higiene',name:'Plano de limpeza atualizado'},{area:'Higiene',name:'Produtos adequados por área'},
+  {area:'Higiene',name:'Manutenções programadas com fornecedores'},{area:'Higiene',name:'Contentores de resíduos'},
+];
+
+function makeTasks(tpl) {
+  if (tpl === 'empty') return [];
+  return CHECKLIST_TPL.map((t, i) => ({
+    id: i+1, area: t.area, name: t.name, obs:'', status:'NC',
+    prio:'Média', resp:'', start:'', end:'', cost:0, prog:0, photos:[], notes:''
+  }));
+}
+
+// ══════════════════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════════════════
+function loadAll() {
+  try {
+    const m = localStorage.getItem(LS_META);
+    if (m) { const d = JSON.parse(m); pharmacies = d.pharmacies||[]; cfg = Object.assign(cfg, d.cfg||{}); }
+  } catch(e){}
+}
+function saveAll() {
+  localStorage.setItem(LS_META, JSON.stringify({pharmacies, cfg}));
+}
+function loadPharma(id) {
+  try {
+    const r = localStorage.getItem(LS_PFX+id);
+    if (r) { const d = JSON.parse(r); tasks = d.tasks||[]; nextId = d.nextId||100; }
+    else { tasks = []; nextId = 100; }
+  } catch(e){ tasks=[]; nextId=100; }
+}
+function savePharma(id) {
+  if (!id) return;
+  localStorage.setItem(LS_PFX+id, JSON.stringify({tasks, nextId, savedAt: new Date().toISOString()}));
+}
+
+// ══════════════════════════════════════════════════════
+// PHARMACY MANAGEMENT
+// ══════════════════════════════════════════════════════
+function selectPharma(id) {
+  if (currentPhId) savePharmaRobust(currentPhId);
+  currentPhId = id;
+  loadPharma(id);
+  const ph = pharmacies.find(p=>p.id===id);
+  document.getElementById('hdr-title').textContent = ph ? ph.name+' · Plano de Ação' : 'Plano de Ação';
+  document.getElementById('hdr-sub').textContent = ph ? (ph.loc?ph.loc+' · ':'')+'Auditoria '+(ph.date||'') : '';
+  document.getElementById('btn-sync').disabled = !cfg.scriptUrl;
+  renderChips();
+  renderAll();
+  if (cfg.scriptUrl) setSyncState('ok','Config carregada. Clica Sincronizar.');
+  showTab('gantt');
+}
+
+function openNewPharma(editId) {
+  document.getElementById('pm-title').textContent = editId ? 'Editar Farmácia' : 'Nova Farmácia';
+  document.getElementById('pm-edit-id').value = editId||'';
+  document.getElementById('pm-name').value = '';
+  document.getElementById('pm-loc').value = '';
+  document.getElementById('pm-date').value = new Date().toISOString().slice(0,10);
+  if (editId) {
+    const ph = pharmacies.find(p=>p.id===editId);
+    if (ph) { document.getElementById('pm-name').value=ph.name; document.getElementById('pm-loc').value=ph.loc||''; document.getElementById('pm-date').value=ph.date||''; }
+    document.getElementById('tpl-grid').style.display='none';
+  } else {
+    document.getElementById('tpl-grid').style.display='grid';
+    selectTpl(document.querySelector('[data-tpl="checklist41"]'));
+  }
+  document.getElementById('pharma-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('pm-name').focus(),100);
+}
+function closePharmaModal(){ document.getElementById('pharma-modal').classList.remove('open'); }
+function selectTpl(el){ document.querySelectorAll('.tpl-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); selectedTpl=el.dataset.tpl; }
+
+function savePharma_modal() {
+  const name = document.getElementById('pm-name').value.trim();
+  if (!name) { showToast('Introduz o nome da farmácia',true); return; }
+  const editId = document.getElementById('pm-edit-id').value;
+  if (editId) {
+    const ph = pharmacies.find(p=>p.id===editId);
+    if (ph) { ph.name=name; ph.loc=document.getElementById('pm-loc').value.trim(); ph.date=document.getElementById('pm-date').value; }
+    saveAll(); closePharmaModal(); renderChips(); renderOverview();
+    if (currentPhId===editId) { document.getElementById('hdr-title').textContent=name+' · Plano de Ação'; }
+    showToast('Farmácia atualizada');
+  } else {
+    const id = 'ph_'+Date.now();
+    const ph = { id, name, loc:document.getElementById('pm-loc').value.trim(), date:document.getElementById('pm-date').value };
+    pharmacies.push(ph);
+    const initTasks = makeTasks(selectedTpl);
+    localStorage.setItem(LS_PFX+id, JSON.stringify({tasks:initTasks, nextId:initTasks.length+1}));
+    saveAll(); closePharmaModal(); renderChips(); renderOverview();
+    showToast('Farmácia criada: '+name);
+    selectPharma(id);
+  }
+}
+// alias
+function savePharma(x) {
+  if (typeof x === 'string') { localStorage.setItem(LS_PFX+x, JSON.stringify({tasks, nextId})); return; }
+  savePharma_modal();
+}
+
+function deletePharmaConfirm(id, name) {
+  if (!confirm('Eliminar "'+name+'" e todos os seus dados? Esta ação não pode ser desfeita.')) return;
+  pharmacies = pharmacies.filter(p=>p.id!==id);
+  localStorage.removeItem(LS_PFX+id);
+  saveAll();
+  if (currentPhId===id) { currentPhId=null; tasks=[]; renderAll(); document.getElementById('hdr-title').textContent='Plano de Ação · Auditorias'; document.getElementById('hdr-sub').textContent='Seleciona ou cria uma farmácia'; }
+  renderChips(); renderOverview();
+  showToast('Farmácia eliminada');
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER CHIPS & OVERVIEW
+// ══════════════════════════════════════════════════════
+function renderChips() {
+  const el = document.getElementById('pharma-chips');
+  el.innerHTML = pharmacies.map(ph => {
+    const d = getPhStats(ph.id);
+    return `<div class="pharma-chip${ph.id===currentPhId?' active':''}" onclick="selectPharma('${ph.id}')">
+      ${ph.name}<span class="chip-badge">${d.nc}NC</span>
+    </div>`;
+  }).join('');
+}
+
+function getPhStats(id) {
+  try { const d=JSON.parse(localStorage.getItem(LS_PFX+id)||'{}'); const t=d.tasks||[]; return {nc:t.filter(x=>x.status==='NC').length,ec:t.filter(x=>x.status==='EC').length,ok:t.filter(x=>x.status==='OK').length,done:t.filter(x=>x.status==='DONE').length,total:t.length}; }
+  catch(e){ return {nc:0,ec:0,ok:0,done:0,total:0}; }
+}
+
+function renderOverview() {
+  const grid = document.getElementById('overview-grid');
+  const empty = document.getElementById('overview-empty');
+  if (pharmacies.length===0) { empty.classList.remove('hidden'); grid.innerHTML=''; return; }
+  empty.classList.add('hidden');
+  grid.innerHTML = pharmacies.map(ph => {
+    const s = getPhStats(ph.id);
+    const pct = s.total>0 ? Math.round((s.done+s.ok)/s.total*100) : 0;
+    return `<div class="pharma-card${ph.id===currentPhId?' active-card':''}" onclick="selectPharma('${ph.id}')">
+      <div class="pharma-card-actions no-print">
+        <button class="btn btn-sm" onclick="event.stopPropagation();openNewPharma('${ph.id}')" title="Editar">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deletePharmaConfirm('${ph.id}','${ph.name.replace(/'/g,"\\'")}')">🗑</button>
+      </div>
+      <h4>${ph.name}</h4>
+      <div class="audit-date">📅 ${ph.date||'sem data'} ${ph.loc?'· 📍'+ph.loc:''}</div>
+      <div class="pharma-mini-stats">
+        <span class="mini-stat ms-nc">${s.nc} NC</span>
+        <span class="mini-stat ms-ec">${s.ec} Em Curso</span>
+        <span class="mini-stat ms-ok">${s.done} Concluídos</span>
+      </div>
+      <div style="margin-top:.65rem">
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-bottom:.25rem"><span>Progresso geral</span><span>${pct}%</span></div>
+        <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct>=80?'var(--ok)':pct>=40?'var(--warn)':'#4dc9a0'};border-radius:3px;transition:width .4s"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// APPS SCRIPT SYNC
+// ══════════════════════════════════════════════════════
+const ROW_HEADERS = ['id','area','name','obs','status','prio','resp','start','end','cost','prog','photos','lastEdit','editBy','created','notes'];
+function taskToRow(t){ return ROW_HEADERS.map(h=>h==='photos'?JSON.stringify(t.photos||[]):t[h]!==undefined?t[h]:''); }
+function objToTask(o){
+  if(!o||!o.id) return null;
+  let photos=[]; try{photos=JSON.parse(o.photos||'[]');}catch(e){}
+  return {id:+o.id||0,area:o.area||'',name:o.name||'',obs:o.obs||'',status:o.status||'NC',prio:o.prio||'Média',resp:o.resp||'',start:o.start||'',end:o.end||'',cost:+o.cost||0,prog:+o.prog||0,photos,lastEdit:o.lastEdit||'',editBy:o.editBy||'',created:o.created||'',notes:o.notes||''};
+}
+function sheetName(id){ const ph=pharmacies.find(p=>p.id===id); return ph?ph.name.replace(/[^\w\s]/g,'').trim().slice(0,30):'Sheet1'; }
+
+function setSyncState(s,msg){ const d=document.getElementById('sdot'),t=document.getElementById('smsg'); d.className='sdot '+(s==='ok'?'ok':s==='err'?'err':'spin2'); t.textContent=msg; }
+
+async function fetchRemote(phId){
+  const sn=encodeURIComponent(sheetName(phId));
+  const r=await fetch(cfg.scriptUrl+'?sheet='+sn+'&t='+Date.now());
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json(); if(!d.ok) throw new Error(d.error||'Erro');
+  return (d.rows||[]).map(objToTask).filter(t=>t&&t.id);
+}
+async function writeRemote(phId,allTasks){
+  const rows=allTasks.map(taskToRow);
+  const r=await fetch(cfg.scriptUrl,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'write',sheet:sheetName(phId),rows})});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json(); if(!d.ok) throw new Error(d.error||'Erro ao escrever');
+}
+async function initSheetRemote(phId){
+  await fetch(cfg.scriptUrl,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'init',sheet:sheetName(phId)})});
+}
+
+async function syncNow(){
+  if(!cfg.scriptUrl){showToast('Configura o Apps Script primeiro',true);showTab('config');return;}
+  if(!currentPhId){showToast('Seleciona uma farmácia primeiro',true);return;}
+  setSyncState('loading','A sincronizar…');
+  try{
+    const remote=await fetchRemote(currentPhId);
+    if(remote.length>0){
+      detectRemoteChanges(remote);
+      const rIds=new Set(remote.map(t=>t.id));
+      const localOnly=tasks.filter(t=>!rIds.has(t.id));
+      // Merge inteligente: ganha a versão com lastEdit mais recente
+      const merged=remote.map(rt=>{
+        const lt=tasks.find(t=>t.id===rt.id);
+        if(!lt) return rt;
+        return (rt.lastEdit||'')>=(lt.lastEdit||'') ? rt : lt;
+      });
+      tasks=[...merged,...localOnly];
+      nextId=Math.max(nextId,...tasks.map(t=>t.id))+1;
+    }
+    await writeRemote(currentPhId,tasks);
+    savePharmaRobust(currentPhId);
+    renderAll();
+    setSyncState('ok','✓ Sincronizado às '+new Date().toLocaleTimeString('pt-PT'));
+    showToast('✓ Sincronizado');
+  }catch(e){setSyncState('err','✗ '+e.message);showToast('Erro: '+e.message,true);}
+}
+
+async function testConn(){
+  const url=document.getElementById('cfg-url').value.trim();
+  const r=document.getElementById('test-res');
+  if(!url){r.textContent='⚠ Cola o URL primeiro';r.style.color='var(--warn)';return;}
+  r.textContent='⏳ A testar…';r.style.color='var(--muted)';
+  try{
+    const res=await fetch(url+'?t='+Date.now());
+    if(res.ok){const d=await res.json();r.textContent=d.ok!==undefined?'✓ Ligação OK!':'⚠ Resposta inesperada';r.style.color=d.ok!==undefined?'var(--ok)':'var(--warn)';}
+    else{r.textContent='✗ HTTP '+res.status;r.style.color='var(--danger)';}
+  }catch(e){r.textContent='✗ '+e.message;r.style.color='var(--danger)';}
+}
+function saveConfig(){cfg.scriptUrl=document.getElementById('cfg-url').value.trim();saveAll();document.getElementById('btn-sync').disabled=!cfg.scriptUrl;showToast('Config guardada ✓');if(cfg.scriptUrl)setSyncState('ok','Pronto. Clica Sincronizar.');}
+function saveUser(){cfg.username=document.getElementById('cfg-user').value.trim()||'Utilizador';saveAll();showToast('Nome guardado: '+cfg.username);}
+function startAutoSync(){if(syncTimer)clearInterval(syncTimer);if(!cfg.scriptUrl)return;syncTimer=setInterval(()=>{if(currentPhId)syncNow();},60000);}
+
+let syncDebounce=null;
+function debouncedSync(){clearTimeout(syncDebounce);syncDebounce=setTimeout(()=>{if(currentPhId&&cfg.scriptUrl)syncNow();},3000);}
+
+// ══════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════
+const ACLS={Frontoffice:'a-fr',Backoffice:'a-bk',Infraestrutura:'a-in',Equipamento:'a-eq',Higiene:'a-hi'};
+const SCLS={NC:'s-nc',EC:'s-ec',OK:'s-ok',DONE:'s-dn'};
+const SLBL={NC:'Não Conforme',EC:'Em Curso',OK:'Conforme',DONE:'✓ Concluído'};
+const PCLS={Alta:'p-A',Média:'p-M',Baixa:'p-B'};
+const ACLR={Frontoffice:'#4dc9a0',Backoffice:'#e8a830',Infraestrutura:'#8abe28',Equipamento:'#a060e8',Higiene:'#5090e0'};
+
+function updateStats(){
+  const nc=tasks.filter(t=>t.status==='NC').length;
+  const ec=tasks.filter(t=>t.status==='EC').length;
+  const ok=tasks.filter(t=>t.status==='OK').length;
+  const dn=tasks.filter(t=>t.status==='DONE').length;
+  document.getElementById('s-nc').textContent=nc;
+  document.getElementById('s-ec').textContent=ec;
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-done').textContent=dn;
+}
+
+function bColor(p){return p>=100?'var(--ok)':p>=50?'var(--warn)':'#4dc9a0';}
+
+function renderGantt(){
+  if(!currentPhId){document.getElementById('gantt-empty').classList.remove('hidden');document.getElementById('gantt-content').classList.add('hidden');return;}
+  document.getElementById('gantt-empty').classList.add('hidden');document.getElementById('gantt-content').classList.remove('hidden');
+  const fa=document.getElementById('f-area').value,fs=document.getElementById('f-status').value,fp=document.getElementById('f-prio').value;
+  const list=tasks.filter(t=>(!fa||t.area===fa)&&(!fs||t.status===fs)&&(!fp||t.prio===fp));
+  document.getElementById('gantt-body').innerHTML=list.map(t=>{
+    const ph=t.photos||[];
+    const photoCell=ph.length>0
+      ?`<div style="display:flex;gap:3px;flex-wrap:wrap">${ph.slice(0,2).map((p,i)=>`<img class="pthumb" src="${p}" onclick="openLb(${t.id},${i})">`).join('')}${ph.length>2?`<span class="pcnt" onclick="openLb(${t.id},0)">+${ph.length-2}</span>`:''}</div>`
+      :`<label class="pcnt" title="Adicionar foto">📷<input type="file" accept="image/*" style="display:none" onchange="quickPhoto(${t.id},event)"></label>`;
+    return`<tr>
+      <td><span class="atag ${ACLS[t.area]||''}">${t.area}</span></td>
+      <td><div style="font-weight:600;font-size:.8rem">${t.name}</div><div style="font-size:.68rem;color:var(--muted);margin-top:2px;line-height:1.3">${(t.obs||'').slice(0,65)}${t.obs&&t.obs.length>65?'…':''}</div></td>
+      <td><span class="stag ${SCLS[t.status]||''}">${SLBL[t.status]||t.status}</span></td>
+      <td><span class="ptag ${PCLS[t.prio]||''}">${t.prio||'—'}</span></td>
+      <td><input class="il" value="${t.resp||''}" onchange="fChange(${t.id},'resp',this.value)" placeholder="Responsável…" style="min-width:95px"></td>
+      <td><input type="date" class="il" value="${t.end||''}" onchange="fChange(${t.id},'end',this.value)"></td>
+      <td><input type="number" class="il" value="${t.cost||''}" onchange="fChange(${t.id},'cost',+this.value)" placeholder="0" style="max-width:58px"></td>
+      <td>
+        <div class="bwrap"><div class="bar" style="width:${t.prog||0}%;background:${bColor(t.prog||0)}"></div><span class="blbl">${t.prog||0}%</span></div>
+        <input type="range" min="0" max="100" step="5" value="${t.prog||0}" oninput="fChange(${t.id},'prog',+this.value);renderGantt()" style="width:130px;margin-top:3px;accent-color:var(--accent)">
+      </td>
+      <td>${photoCell}</td>
+      <td class="no-print" style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="openEdit(${t.id})">✏️</button>
+        ${t.status!=='DONE'?`<button class="btn btn-sm" onclick="markDone(${t.id})" style="color:var(--ok);border-color:#a0ddb8;margin-top:2px">✓</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderChecklist(){
+  if(!currentPhId){document.getElementById('checklist-body').innerHTML='<div class="empty-state"><div class="icon">✅</div><h2>Seleciona uma farmácia</h2></div>';return;}
+  const areas=['Frontoffice','Backoffice','Infraestrutura','Equipamento','Higiene'];
+  document.getElementById('checklist-body').innerHTML=areas.map(area=>{
+    const items=tasks.filter(t=>t.area===area);
+    if(!items.length) return '';
+    return`<div class="agroup">
+      <div class="ahdr"><span class="atag ${ACLS[area]||''}">${area}</span><h3>${area}</h3><span class="acnt">${items.length} itens · ${items.filter(t=>t.status==='DONE').length} ✓</span></div>
+      ${items.map(t=>{
+        const ph=t.photos||[];
+        return`<div class="icard ${t.status.toLowerCase()}">
+          <div>
+            <div class="iname">${t.name}</div>
+            <div class="iobs">${t.obs||''}</div>
+            ${t.notes?`<div style="font-size:.73rem;color:var(--accent2);margin-top:.35rem;font-style:italic">📝 ${t.notes}</div>`:''}
+            <div class="imeta">
+              <span class="stag ${SCLS[t.status]||''}">${SLBL[t.status]||t.status}</span>
+              ${t.prio?`<span class="ptag ${PCLS[t.prio]||''}">${t.prio}</span>`:''}
+              ${t.resp?`<span style="font-size:.7rem;color:var(--muted)">👤 ${t.resp}</span>`:''}
+              ${t.end?`<span style="font-size:.7rem;color:var(--muted)">📅 ${t.end}</span>`:''}
+              ${t.cost?`<span style="font-size:.7rem;color:var(--muted)">€${t.cost}</span>`:''}
+            </div>
+            ${ph.length?`<div class="iphotos">${ph.map((p,i)=>`<img src="${p}" class="pthumb" onclick="openLb(${t.id},${i})" style="width:52px;height:52px">`).join('')}</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end" class="no-print">
+            <button class="btn btn-sm" onclick="openEdit(${t.id})">✏️ Editar</button>
+            ${t.status!=='DONE'?`<button class="btn btn-sm" onclick="markDone(${t.id})" style="color:var(--ok);border-color:#a0ddb8">✓ Concluir</button>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderTimeline(){
+  const ph=pharmacies.find(p=>p.id===currentPhId);
+  document.getElementById('tl-title').textContent='Timeline · '+(ph?ph.name:'');
+  if(!currentPhId||!tasks.length){document.getElementById('tlt').innerHTML='<tr><td style="padding:2rem;color:var(--muted);font-size:.82rem">Seleciona uma farmácia com tarefas.</td></tr>';return;}
+  const start=new Date('2026-03-01');const weeks=20;
+  const wl=[];for(let w=0;w<weeks;w++){const d=new Date(start);d.setDate(d.getDate()+w*7);wl.push(d.toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}));}
+  const active=tasks.filter(t=>t.status!=='OK'&&t.end&&t.start);
+  document.getElementById('tlt').innerHTML=`<thead><tr>
+    <th style="text-align:left;min-width:200px;padding-left:.7rem;border:1px solid var(--border)">Tarefa</th>
+    ${wl.map(w=>`<th style="min-width:65px">${w}</th>`).join('')}
+  </tr></thead><tbody>
+  ${active.map(t=>{
+    const ts=new Date(t.start),te=new Date(t.end);
+    const color=ACLR[t.area]||'#888';
+    const cells=wl.map((_,wi)=>{
+      const ws=new Date(start);ws.setDate(ws.getDate()+wi*7);
+      const we=new Date(ws);we.setDate(we.getDate()+6);
+      return`<td class="dc">${ts<=we&&te>=ws?`<div class="tlbar" style="background:${color}${t.status==='DONE'?'ff':'77'}"></div>`:''}</td>`;
+    }).join('');
+    return`<tr><td class="rl" title="${t.obs||''}"><span class="atag ${ACLS[t.area]||''}" style="font-size:.58rem;padding:.08rem .28rem;margin-right:3px">${t.area.slice(0,3)}</span>${t.name}</td>${cells}</tr>`;
+  }).join('')}
+  </tbody>`;
+}
+
+function renderAll(){updateStats();renderGantt();renderChecklist();renderTimeline();renderOverview();renderChips();}
+
+// ══════════════════════════════════════════════════════
+// CRUD
+// ══════════════════════════════════════════════════════
+function fChange(id,field,val){
+  const t=tasks.find(t=>t.id===id);if(!t)return;
+  t[field]=val;t.lastEdit=new Date().toISOString();t.editBy=cfg.username;
+  savePharmaRobust(currentPhId);updateStats();renderOverview();
+  if(cfg.scriptUrl)debouncedSync();
+}
+function markDone(id){
+  const t=tasks.find(t=>t.id===id);if(!t)return;
+  t.status='DONE';t.prog=100;t.lastEdit=new Date().toISOString();t.editBy=cfg.username;
+  savePharmaRobust(currentPhId);renderAll();if(cfg.scriptUrl)debouncedSync();
+  showToast('✓ Tarefa concluída');
+}
+function openAdd(){
+  if(!currentPhId){showToast('Seleciona uma farmácia primeiro',true);return;}
+  document.getElementById('modal-title').textContent='Nova Tarefa';
+  document.getElementById('eid').value='';pendingPhotos=[];
+  ['f-name','f-obs','f-resp','f-start','f-end','f-cost','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-prio-m').value='Média';document.getElementById('f-status-m').value='NC';
+  document.getElementById('f-prog').value=0;document.getElementById('pval').textContent='0%';
+  document.getElementById('uprevs').innerHTML='';
+  document.getElementById('modal').classList.add('open');
+}
+function openEdit(id){
+  const t=tasks.find(t=>t.id===id);if(!t)return;
+  pendingPhotos=[...(t.photos||[])];
+  document.getElementById('modal-title').textContent='Editar Tarefa';
+  document.getElementById('eid').value=id;
+  document.getElementById('f-area-m').value=t.area||'Frontoffice';
+  document.getElementById('f-name').value=t.name||'';
+  document.getElementById('f-obs').value=t.obs||'';
+  document.getElementById('f-status-m').value=t.status||'NC';
+  document.getElementById('f-prio-m').value=t.prio||'Média';
+  document.getElementById('f-resp').value=t.resp||'';
+  document.getElementById('f-start').value=t.start||'';
+  document.getElementById('f-end').value=t.end||'';
+  document.getElementById('f-cost').value=t.cost||'';
+  document.getElementById('f-prog').value=t.prog||0;
+  document.getElementById('pval').textContent=(t.prog||0)+'%';
+  document.getElementById('f-notes').value=t.notes||'';
+  renderUprevs();document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');pendingPhotos=[];}
+function saveTask(){
+  const eid=document.getElementById('eid').value;
+  const obj={area:document.getElementById('f-area-m').value,name:document.getElementById('f-name').value,obs:document.getElementById('f-obs').value,status:document.getElementById('f-status-m').value,prio:document.getElementById('f-prio-m').value,resp:document.getElementById('f-resp').value,start:document.getElementById('f-start').value,end:document.getElementById('f-end').value,cost:+document.getElementById('f-cost').value||0,prog:+document.getElementById('f-prog').value||0,photos:[...pendingPhotos],notes:document.getElementById('f-notes').value,lastEdit:new Date().toISOString(),editBy:cfg.username};
+  if(eid){const t=tasks.find(t=>t.id===+eid);if(t)Object.assign(t,obj);}
+  else{obj.id=++nextId;obj.created=new Date().toISOString();tasks.push(obj);}
+  savePharmaRobust(currentPhId);closeModal();renderAll();if(cfg.scriptUrl)debouncedSync();showToast('Tarefa guardada');
+}
+
+// ══════════════════════════════════════════════════════
+// PHOTOS — compressão agressiva (600px / 65%)
+// ══════════════════════════════════════════════════════
+function resizeImg(file,maxPx,q){return new Promise(res=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{let{width:w,height:h}=img;if(w>maxPx||h>maxPx){if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',q||.65));URL.revokeObjectURL(url);};img.src=url;});}
+async function handlePhotos(e){const files=Array.from(e.target.files).slice(0,5-pendingPhotos.length);for(const f of files){const b=await resizeImg(f,600,.65);pendingPhotos.push(b);}renderUprevs();e.target.value='';}
+function renderUprevs(){document.getElementById('uprevs').innerHTML=pendingPhotos.map((p,i)=>`<div class="uprv"><img src="${p}"><div class="rm" onclick="rmPhoto(${i})">×</div></div>`).join('');}
+function rmPhoto(i){pendingPhotos.splice(i,1);renderUprevs();}
+async function quickPhoto(taskId,e){const f=e.target.files[0];if(!f)return;const b=await resizeImg(f,600,.65);const t=tasks.find(t=>t.id===taskId);if(!t)return;if(!t.photos)t.photos=[];if(t.photos.length>=5){showToast('Máx. 5 fotos',true);return;}t.photos.push(b);t.lastEdit=new Date().toISOString();t.editBy=cfg.username;savePharmaRobust(currentPhId);renderAll();if(cfg.scriptUrl)debouncedSync();showToast('📷 Foto adicionada');}
+
+// ══════════════════════════════════════════════════════
+// DATA INTEGRITY — backup automático + validação
+// ══════════════════════════════════════════════════════
+const LS_BACKUP = 'audit26_backup_';
+
+// Guarda backup rotativo (mantém os 3 mais recentes por farmácia)
+function saveBackup(phId) {
+  try {
+    const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
+    const key = LS_BACKUP + phId + '_' + ts;
+    localStorage.setItem(key, JSON.stringify({tasks, nextId, backedUpAt: new Date().toISOString()}));
+    // Limpar backups antigos — manter só 3
+    const allKeys = Object.keys(localStorage).filter(k=>k.startsWith(LS_BACKUP+phId));
+    allKeys.sort().reverse().slice(3).forEach(k=>localStorage.removeItem(k));
+  } catch(e) { /* silencioso se localStorage cheio */ }
+}
+
+// Verifica integridade dos dados antes de guardar
+function validateTasks(arr) {
+  if (!Array.isArray(arr)) return false;
+  return arr.every(t => t && typeof t.id === 'number' && t.name && t.area);
+}
+
+// Versão reforçada do savePharma
+function savePharmaRobust(id) {
+  if (!id || !validateTasks(tasks)) { console.warn('savePharma: dados inválidos, cancelado'); return; }
+  try {
+    const payload = JSON.stringify({tasks, nextId, savedAt: new Date().toISOString()});
+    localStorage.setItem(LS_PFX+id, payload);
+    // Backup a cada 5 minutos (não a cada keystroke)
+    const now = Date.now();
+    if (!savePharmaRobust._lastBackup || now - savePharmaRobust._lastBackup > 300000) {
+      saveBackup(id);
+      savePharmaRobust._lastBackup = now;
+    }
+  } catch(e) {
+    showToast('⚠ Erro ao guardar localmente — localStorage pode estar cheio', true);
+  }
+}
+
+// Lista backups disponíveis para uma farmácia
+function listBackups(phId) {
+  return Object.keys(localStorage)
+    .filter(k=>k.startsWith(LS_BACKUP+phId))
+    .sort().reverse()
+    .map(k=>({ key:k, ts:k.replace(LS_BACKUP+phId+'_','') }));
+}
+
+// ══════════════════════════════════════════════════════
+// COLABORAÇÃO — deteção de alterações remotas
+// ══════════════════════════════════════════════════════
+let remoteChangeCount = 0;
+
+// Após fetch remoto, compara com estado local e notifica
+function detectRemoteChanges(remoteTasks) {
+  if (!tasks.length) return;
+  let changed = 0;
+  remoteTasks.forEach(rt => {
+    const lt = tasks.find(t=>t.id===rt.id);
+    if (lt && rt.lastEdit && lt.lastEdit && rt.lastEdit > lt.lastEdit) changed++;
+  });
+  if (changed > 0) {
+    remoteChangeCount = changed;
+    showRemoteBanner(changed);
+  }
+}
+
+function showRemoteBanner(n) {
+  let banner = document.getElementById('remote-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'remote-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:.5rem 1.25rem;border-radius:0 0 10px 10px;font-size:.8rem;font-weight:600;z-index:500;cursor:pointer;box-shadow:0 4px 12px rgba(27,79,216,.3);font-family:var(--fh)';
+    banner.onclick = () => { banner.remove(); };
+    document.body.appendChild(banner);
+  }
+  banner.textContent = `🔄 ${n} tarefa${n>1?'s':''} atualizada${n>1?'s':''} por um colega — dados sincronizados`;
+  setTimeout(()=>{ if(banner.parentNode) banner.remove(); }, 6000);
+}
+
+// ══════════════════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════════════════
+function openLb(taskId,idx){const t=tasks.find(t=>t.id===taskId);if(!t||!t.photos||!t.photos.length)return;lbPhotos=[...t.photos];lbIdx=idx;showLb();document.getElementById('lbox').classList.add('open');}
+function showLb(){document.getElementById('lb-img').src=lbPhotos[lbIdx];document.getElementById('lb-cnt').textContent=(lbIdx+1)+' / '+lbPhotos.length;}
+function lbPrev(){lbIdx=(lbIdx-1+lbPhotos.length)%lbPhotos.length;showLb();}
+function lbNext(){lbIdx=(lbIdx+1)%lbPhotos.length;showLb();}
+function closeLb(){document.getElementById('lbox').classList.remove('open');lbPhotos=[];}
+
+// ══════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ══════════════════════════════════════════════════════
+function exportJSON(){
+  const allData={pharmacies,cfg,data:{}};
+  pharmacies.forEach(ph=>{try{allData.data[ph.id]=JSON.parse(localStorage.getItem(LS_PFX+ph.id)||'{}');}catch(e){}});
+  const blob=new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Auditorias_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{
+    const d=JSON.parse(ev.target.result);
+    if(d.pharmacies){pharmacies=d.pharmacies;cfg=Object.assign(cfg,d.cfg||{});}
+    if(d.data){Object.entries(d.data).forEach(([id,v])=>localStorage.setItem(LS_PFX+id,JSON.stringify(v)));}
+    saveAll();loadAll();renderChips();renderOverview();showToast('JSON importado ✓');
+  }catch(err){showToast('Erro ao importar',true);}};
+  r.readAsText(f);
+}
+function exportPDF(){showTab('checklist');setTimeout(()=>window.print(),300);}
+
+// ══════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════
+function showTab(tab){
+  ['overview','gantt','checklist','timeline','config'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['overview','gantt','checklist','timeline','config'][i]===tab));
+}
+
+// ══════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════
+let toastT=null;
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' err':'');t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+
+// ══════════════════════════════════════════════════════
+// STORAGE INFO & BACKUP RESTORE
+// ══════════════════════════════════════════════════════
+function showStorageInfo() {
+  let total = 0;
+  for (const k in localStorage) {
+    if (Object.prototype.hasOwnProperty.call(localStorage, k)) {
+      total += (localStorage[k].length * 2); // UTF-16
+    }
+  }
+  const kb = (total/1024).toFixed(1);
+  const pct = (total/(5*1024*1024)*100).toFixed(1);
+  const el = document.getElementById('storage-info');
+  el.textContent = `Usado: ${kb} KB de ~5120 KB (${pct}%)`;
+  el.style.color = pct > 80 ? 'var(--danger)' : pct > 60 ? 'var(--warn)' : 'var(--ok)';
+}
+
+function showBackupList() {
+  const container = document.getElementById('backup-list');
+  if (container.style.display !== 'none') { container.style.display='none'; return; }
+  if (!currentPhId) { showToast('Seleciona uma farmácia primeiro', true); return; }
+  const backups = listBackups(currentPhId);
+  if (!backups.length) { container.innerHTML='<p style="font-size:.78rem;color:var(--muted)">Sem backups locais para esta farmácia ainda.</p>'; }
+  else {
+    container.innerHTML = '<p style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">Clica para restaurar:</p>' +
+      backups.map(b=>`<button class="btn btn-sm" style="margin:2px;display:inline-block" onclick="restoreBackup('${b.key}')">${b.ts}</button>`).join('');
+  }
+  container.style.display = 'block';
+}
+
+function restoreBackup(key) {
+  if (!confirm('Restaurar este backup? Os dados atuais serão substituídos.')) return;
+  try {
+    const d = JSON.parse(localStorage.getItem(key));
+    if (!d || !validateTasks(d.tasks)) { showToast('Backup inválido', true); return; }
+    tasks = d.tasks; nextId = d.nextId||100;
+    savePharmaRobust(currentPhId);
+    renderAll();
+    document.getElementById('backup-list').style.display='none';
+    showToast('✓ Backup restaurado com sucesso');
+  } catch(e) { showToast('Erro ao restaurar: '+e.message, true); }
+}
+
+// ══════════════════════════════════════════════════════
+// FCA AUDIT DATA — extraído do relatório PDF 04/03/2026
+// ══════════════════════════════════════════════════════
+const FCA_TASKS = [
+  // ── FRONTOFFICE ──
+  {id:1,area:'Frontoffice',name:'Iluminação funcional e decorativa',obs:'Projetores do centro e zona dos balcões 1-3 não funciona e tem uma iluminária em falta; projetores da montra queimam e aquecem produtos e tem uma lâmpada em falta',status:'NC',prio:'Alta',resp:'',start:'2026-03-10',end:'2026-03-31',cost:0,prog:0,photos:[],notes:''},
+  {id:2,area:'Frontoffice',name:'Pintura das paredes',obs:'Parede junto ao linear "o meu bebé" está danificada das térmicas, ficou com placa de madeira que dá mau aspeto',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-15',cost:0,prog:0,photos:[],notes:''},
+  {id:3,area:'Frontoffice',name:'Sinalética (WC, serviços, campanhas)',obs:'Falta sinalética para o balcão 6; GAP precisa de mudar sinalética para layout Shee; divulgação dos serviços no ecrã; tabela de preços em acrílico apropriado',status:'NC',prio:'Média',resp:'',start:'2026-03-10',end:'2026-03-25',cost:0,prog:0,photos:[],notes:''},
+  {id:4,area:'Frontoffice',name:'Temperatura ambiente adequada',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:5,area:'Frontoffice',name:'Ruído controlado',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:6,area:'Frontoffice',name:'Aromatização suave',obs:'Funciona mas não se sente aroma',status:'NC',prio:'Baixa',resp:'',start:'2026-03-10',end:'2026-03-20',cost:0,prog:0,photos:[],notes:''},
+  {id:7,area:'Frontoffice',name:'Número de balcões suficiente',obs:'Em curso ativação balcão 6',status:'EC',prio:'Alta',resp:'',start:'2026-03-04',end:'2026-03-20',cost:0,prog:50,photos:[],notes:''},
+  {id:8,area:'Frontoffice',name:'Estado dos balcões (cabos)',obs:'Limpeza e organização dos cabos (perigoso) — risco de segurança',status:'NC',prio:'Alta',resp:'',start:'2026-03-04',end:'2026-03-15',cost:0,prog:0,photos:[],notes:''},
+  {id:9,area:'Frontoffice',name:'Expositores de impulso nos balcões',obs:'Faltam prateleiras de 38 cm de largura e limpeza',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-01',cost:0,prog:0,photos:[],notes:''},
+  {id:10,area:'Frontoffice',name:'Equipamento informático — balcão 6',obs:'Falta encomendar novo posto para balcão 6',status:'NC',prio:'Alta',resp:'',start:'2026-03-05',end:'2026-03-20',cost:0,prog:0,photos:[],notes:''},
+  {id:11,area:'Frontoffice',name:'Gavetas/armários — separadores',obs:'Separadores de gaveta — VERIFICAR URGENTE',status:'NC',prio:'Alta',resp:'',start:'2026-03-04',end:'2026-03-14',cost:0,prog:0,photos:[],notes:''},
+  {id:12,area:'Frontoffice',name:'Espaço GAP — atendimento privado',obs:'Falta tampa para caixa eletricidade chão; reorganização layout com nova secretária; pintura paredes; remover cubos da parede; aquisição carrinho de apoio vacinação e injetáveis',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-05-01',cost:0,prog:0,photos:[],notes:''},
+  {id:13,area:'Frontoffice',name:'Lineares suficientes e em bom estado',obs:'Necessidade de complementar zona do "meu bebé" com lineares na zona do balcão sentado. 2 lineares autoportantes em 90º de 70cm ou 2 lado a lado de 60cm a fazer divisória. Expositor para zona do balcão 4. Lineares com fundo verde a alterar.',status:'NC',prio:'Média',resp:'',start:'2026-04-01',end:'2026-05-15',cost:0,prog:0,photos:[],notes:''},
+  {id:14,area:'Frontoffice',name:'Réguas de Preço',obs:'Aguarda entrega',status:'EC',prio:'Baixa',resp:'',start:'2026-03-04',end:'2026-03-20',cost:0,prog:30,photos:[],notes:''},
+  {id:15,area:'Frontoffice',name:'Iluminação dos lineares de montra',obs:'Lineares de montra sem iluminação adequada',status:'NC',prio:'Média',resp:'',start:'2026-03-20',end:'2026-04-10',cost:0,prog:0,photos:[],notes:''},
+  {id:16,area:'Frontoffice',name:'Expositores limpos, sem excesso',obs:'Falta limpeza. Implementar plano de limpeza.',status:'NC',prio:'Média',resp:'',start:'2026-03-10',end:'2026-03-25',cost:0,prog:0,photos:[],notes:''},
+  {id:17,area:'Frontoffice',name:'Materiais de comunicação PDV',obs:'Em falta: comunicação no pdv, monofolha, campanhas promocionais do mês com stoppers (apenas Bioderma); excesso de vinis na entrada da farmácia, chão, balcões; fazer norma para implementação de comunicação pelos laboratórios',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-15',cost:0,prog:0,photos:[],notes:''},
+  {id:18,area:'Frontoffice',name:'Espaço para campanhas sazonais',obs:'Não está definida localização das campanhas',status:'NC',prio:'Baixa',resp:'',start:'2026-03-20',end:'2026-04-15',cost:0,prog:0,photos:[],notes:''},
+  {id:19,area:'Frontoffice',name:'Acessibilidade na entrada',obs:'Acessibilidade ok mas sinalização de desnível tem de ser substituída',status:'NC',prio:'Baixa',resp:'',start:'2026-03-10',end:'2026-03-31',cost:0,prog:0,photos:[],notes:''},
+  {id:20,area:'Frontoffice',name:'Corredores com largura suficiente',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:21,area:'Frontoffice',name:'CCTV funcional',obs:'Falta câmara na zona do "meu bebé", ângulo morto',status:'NC',prio:'Alta',resp:'',start:'2026-03-10',end:'2026-03-31',cost:0,prog:0,photos:[],notes:''},
+  {id:22,area:'Frontoffice',name:'Extintores dentro do prazo',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:23,area:'Frontoffice',name:'Tapetes no chão em condições',obs:'Tapete degradado e já não se consegue limpar — substituir (FCCMAT, tirar medidas)',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-01',cost:0,prog:0,photos:[],notes:''},
+  {id:24,area:'Frontoffice',name:'Ausência de publicidade deteriorada',obs:'Em processo de remoção',status:'EC',prio:'Baixa',resp:'',start:'2026-03-04',end:'2026-03-15',cost:0,prog:60,photos:[],notes:''},
+  {id:25,area:'Frontoffice',name:'Gôndolas',obs:'Em falta prateleiras e organização estruturada de planta com localização de categorias. Falta pintar molduras das gôndolas.',status:'NC',prio:'Média',resp:'',start:'2026-04-01',end:'2026-05-15',cost:0,prog:0,photos:[],notes:''},
+  // ── BACKOFFICE ──
+  {id:26,area:'Backoffice',name:'Iluminação adequada no armazém',obs:'Luzes amarelas na zona de receção',status:'NC',prio:'Baixa',resp:'',start:'2026-03-15',end:'2026-04-01',cost:0,prog:0,photos:[],notes:''},
+  {id:27,area:'Backoffice',name:'Prateleiras estáveis e fixas',obs:'Gaveta danificada',status:'NC',prio:'Média',resp:'',start:'2026-03-10',end:'2026-03-25',cost:0,prog:0,photos:[],notes:''},
+  {id:28,area:'Backoffice',name:'Organização por categorias',obs:'Reorganizar zona de devoluções e produtos externos; organizar nas gavetas',status:'NC',prio:'Média',resp:'',start:'2026-03-10',end:'2026-03-31',cost:0,prog:0,photos:[],notes:''},
+  {id:29,area:'Backoffice',name:'Zona de quarentena identificada',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:30,area:'Backoffice',name:'Controlo de pragas atualizado',obs:'Sem problemas de pragas à data',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:31,area:'Backoffice',name:'Climatização adequada à conservação',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:32,area:'Backoffice',name:'Otimização/ampliação do armazém',obs:'Armário para zona do antigo frigorifico — tirar medidas',status:'NC',prio:'Baixa',resp:'',start:'2026-04-01',end:'2026-05-01',cost:0,prog:0,photos:[],notes:''},
+  {id:33,area:'Backoffice',name:'Ventilação adequada (laboratório)',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:34,area:'Backoffice',name:'Balanças e material de medição calibrados',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:35,area:'Backoffice',name:'Pontos de água e esgotos funcionais',obs:'Colocar ponto de água a funcionar na sala kaizen para apoio louça RH',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-15',cost:0,prog:0,photos:[],notes:''},
+  {id:36,area:'Backoffice',name:'Escritório DT',obs:'Organização; substituição secretária; estante de apoio; eletricidade danificada; zona do servidor com cabos organizados; equacionar porta de vidro; colocar esquina no armário junto à cuba',status:'NC',prio:'Alta',resp:'',start:'2026-03-15',end:'2026-05-01',cost:0,prog:0,photos:[],notes:''},
+  {id:37,area:'Backoffice',name:'Maca/cadeira em bom estado',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:38,area:'Backoffice',name:'Mobiliário funcional — bancada receção',obs:'Bancada de receção com gaveta danificada',status:'NC',prio:'Média',resp:'',start:'2026-03-10',end:'2026-03-25',cost:0,prog:0,photos:[],notes:''},
+  {id:39,area:'Backoffice',name:'Zona de preparação de encomendas',obs:'Falta sinalizar organização sorting e destralhar',status:'NC',prio:'Alta',resp:'',start:'2026-03-10',end:'2026-03-25',cost:0,prog:0,photos:[],notes:''},
+  {id:40,area:'Backoffice',name:'Carrinho de reposição',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:41,area:'Backoffice',name:'Sistemas informáticos de apoio',obs:'Scanner sem fios para substituir atual',status:'NC',prio:'Média',resp:'',start:'2026-03-10',end:'2026-04-01',cost:0,prog:0,photos:[],notes:''},
+  {id:42,area:'Backoffice',name:'Área de pessoal: copa/refeitório',obs:'Reativar ponto de água; destralhar; definir normas de organização com foto de como se devem manter; adquirir portas para estante Kallax para aspeto visual mais clean',status:'NC',prio:'Média',resp:'',start:'2026-03-20',end:'2026-04-30',cost:0,prog:0,photos:[],notes:''},
+  {id:43,area:'Backoffice',name:'WC e vestiários adequados',obs:'Móvel para apoio consumíveis WC; puxadores cacifos; cabide batas ou, se se colocarem fechaduras, equacionar tirar porta dos cacifos',status:'NC',prio:'Baixa',resp:'',start:'2026-04-01',end:'2026-05-01',cost:0,prog:0,photos:[],notes:''},
+  // ── INFRAESTRUTURA ──
+  {id:44,area:'Infraestrutura',name:'Instalação elétrica — tomadas gabinete DT',obs:'Gabinete DT com tomadas queimadas — risco de segurança',status:'NC',prio:'Alta',resp:'',start:'2026-03-05',end:'2026-03-20',cost:0,prog:0,photos:[],notes:''},
+  {id:45,area:'Infraestrutura',name:'Tomadas suficientes e bem distribuídas',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:46,area:'Infraestrutura',name:'Cablagem organizada/sem cabos soltos',obs:'Fazer furação no móvel de apoio novo para gabinete DT',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-01',cost:0,prog:0,photos:[],notes:''},
+  {id:47,area:'Infraestrutura',name:'Rede Wi-Fi estável',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:48,area:'Infraestrutura',name:'Necessidades de pintura',obs:'GAP, zona de atendimento e sala de equipa',status:'NC',prio:'Média',resp:'',start:'2026-04-01',end:'2026-05-15',cost:0,prog:0,photos:[],notes:''},
+  {id:49,area:'Infraestrutura',name:'Necessidades de revestimentos',obs:'Linear "o meu bebé"',status:'NC',prio:'Baixa',resp:'',start:'2026-04-01',end:'2026-05-15',cost:0,prog:0,photos:[],notes:''},
+  {id:50,area:'Infraestrutura',name:'Necessidades de pavimentos',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:51,area:'Infraestrutura',name:'Necessidades de tetos',obs:'Zona de atendimento',status:'NC',prio:'Média',resp:'',start:'2026-04-01',end:'2026-05-15',cost:0,prog:0,photos:[],notes:''},
+  {id:52,area:'Infraestrutura',name:'Portas e janelas em bom estado',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:53,area:'Infraestrutura',name:'Humidades/infiltrações',obs:'Sala de equipa e zona de atendimento',status:'NC',prio:'Alta',resp:'',start:'2026-03-10',end:'2026-04-15',cost:0,prog:0,photos:[],notes:''},
+  // ── EQUIPAMENTO ──
+  {id:54,area:'Equipamento',name:'Cadeiras/secretárias gabinete DT e GAP',obs:'Mobiliário existente demasiado grande para espaço funcional — reorganizar',status:'EC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-30',cost:0,prog:20,photos:[],notes:''},
+  {id:55,area:'Equipamento',name:'Equipamento obsoleto a substituir',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:56,area:'Equipamento',name:'Impressoras/POS/leitores funcionais',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:57,area:'Equipamento',name:'Computadores atualizados e rápidos',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:58,area:'Equipamento',name:'Sistema de senhas',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:59,area:'Equipamento',name:'Máquina de Etiquetas de Linear',obs:'A aguardar entrega',status:'EC',prio:'Média',resp:'',start:'2026-03-04',end:'2026-03-31',cost:0,prog:10,photos:[],notes:''},
+  // ── HIGIENE ──
+  {id:60,area:'Higiene',name:'Plano de limpeza atualizado',obs:'Não existe — criar e implementar urgentemente',status:'NC',prio:'Alta',resp:'',start:'2026-03-10',end:'2026-03-31',cost:0,prog:0,photos:[],notes:''},
+  {id:61,area:'Higiene',name:'Produtos adequados por área',obs:'Sem produtos específicos por área definidos',status:'NC',prio:'Média',resp:'',start:'2026-03-15',end:'2026-04-01',cost:0,prog:0,photos:[],notes:''},
+  {id:62,area:'Higiene',name:'Manutenções programadas com fornecedores',obs:'AVAC, Calibração',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+  {id:63,area:'Higiene',name:'Contentores de resíduos (BAN/indiferenciado/reciclagem)',obs:'',status:'OK',prio:'Baixa',resp:'',start:'',end:'',cost:0,prog:100,photos:[],notes:''},
+];
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+loadAll();
+
+// Populate config UI
+if(cfg.scriptUrl) document.getElementById('cfg-url').value=cfg.scriptUrl;
+if(cfg.username)  document.getElementById('cfg-user').value=cfg.username;
+document.getElementById('btn-sync').disabled=true;
+
+// Inject FCA from PDF if not already present
+const FCA_ID = 'ph_fca_2026';
+if(!pharmacies.find(p=>p.id===FCA_ID)){
+  pharmacies.push({id:FCA_ID, name:'Farmácia FCA', loc:'', date:'2026-03-04'});
+  localStorage.setItem(LS_PFX+FCA_ID, JSON.stringify({tasks:FCA_TASKS, nextId:200}));
+  saveAll();
+}
+
+// Also try migrating old v3 localStorage key if it exists and has newer data
+const oldV3=localStorage.getItem('fca_audit26_data');
+if(oldV3){
+  try{
+    const d=JSON.parse(oldV3);
+    if(d.tasks&&d.tasks.length>0){
+      // Only overwrite if old data has more progress (resp/dates filled in)
+      const hasProgress=d.tasks.some(t=>t.resp||t.end||t.prog>0||t.cost>0||(t.photos&&t.photos.length>0));
+      if(hasProgress){
+        localStorage.setItem(LS_PFX+FCA_ID, JSON.stringify({tasks:d.tasks, nextId:d.nextId||200}));
+        showToast('✓ Dados do v3 restaurados para Farmácia FCA');
+      }
+    }
+  }catch(e){}
+}
+
+renderChips();
+renderOverview();
+if(cfg.scriptUrl)startAutoSync();
+setInterval(()=>{if(currentPhId)savePharmaRobust(currentPhId);saveAll();},20000);
+</script>
+</body>
+</html>
