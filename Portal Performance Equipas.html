@@ -175,6 +175,7 @@ svg.chart{width:100%;height:auto;display:block;overflow:visible}
   <button class="tab" data-v="equipa">Equipa</button>
   <button class="tab" data-v="colab">Evolutivo Colaborador</button>
   <button class="tab" data-v="mercados">Grandes Mercados</button>
+  <button class="tab" data-v="generic">Genéricos</button>
   <button class="tab" data-v="acum">Acumulados</button>
 </div>
 
@@ -199,6 +200,7 @@ svg.chart{width:100%;height:auto;display:block;overflow:visible}
     <div class="view" id="v-equipa"></div>
     <div class="view" id="v-colab"></div>
     <div class="view" id="v-mercados"></div>
+    <div class="view" id="v-generic"></div>
     <div class="view" id="v-acum"></div>
   </div>
   <div class="foot">SHEE · Portal de Performance de Equipas · dados extraídos do Sifarma.Gest — Glintt | ANF</div>
@@ -221,6 +223,13 @@ const GM_ORDER = ["MSRM","MNSRM","PSBE","Outros"];
 const GM_COLOR = {MSRM:"var(--msrm)",MNSRM:"var(--mnsrm)",PSBE:"var(--psbe)",Outros:"var(--outros)"};
 const SERIES = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)","var(--c7)"];
 const RANK_COLORS = ["#3E8E5A","#5B9BD5","#E08544","#E8B84B","#B4573F","#3C4859","#8E2F35"]; // 1..7 (ANF style)
+// Laboratórios conhecidos por genéricos (mercado PT). Serve para a análise «Genéricos» — é um
+// indicador POR LABORATÓRIO, não a % de Grupos Homogéneos da ANF (que exige o flag de genérico).
+const GENERIC_LABS = new Set(["generis","viatris","teva","krka","medinfar","tecnimede","towa pharmaceutical",
+  "bluepharma","atral","sandoz","azevedos","stada","alter","zentiva","accord","aristo","labesfal","stragen",
+  "aurobindo","cinfa","normon","farmoz","ciclum","pentafarma","wynn","mylan","ratiopharm","pharmakern",
+  "actavis","glenmark","sofarimex","vivanta","pharmides","ciclum farma"]);
+function isGeneric(lab){ const n=norm(lab); return GENERIC_LABS.has(n)||n.startsWith("towa")||n.startsWith("krka")||n.startsWith("ratiopharm"); }
 
 /* ---------- state ---------- */
 let DB = { v:1, months:{}, pharmacyName:"", pharmacyCode:"" };
@@ -324,13 +333,18 @@ function parseText(text){
     if(!/^\d{4}$/.test(y)||!mo||!colab) continue;
     rows++;
     const key=y+"-"+String(mo).padStart(2,"0");
-    let M=out[key]; if(!M){ M=out[key]={tot:[0,0,0,0],colabs:{}}; }
+    let M=out[key]; if(!M){ M=out[key]={tot:[0,0,0,0],colabs:{},labTot:{}}; }
     const v=parseNum(f[C.vendas]), m=parseNum(f[C.margem]), q=parseNum(f[C.qtd]), a=parseNum(f[C.atend]);
     M.tot[0]+=v; M.tot[1]+=m; M.tot[2]+=q; M.tot[3]+=a;
-    let d=M.colabs[colab]; if(!d){ d=M.colabs[colab]={v:0,m:0,q:0,a:0,gm:{}}; }
+    let d=M.colabs[colab]; if(!d){ d=M.colabs[colab]={v:0,m:0,q:0,a:0,gm:{},gen:{}}; }
     d.v+=v; d.m+=m; d.q+=q; d.a+=a;
     const gm=mapGM(f[C.gm]);
     if(gm){ let g=d.gm[gm]; if(!g){ g=d.gm[gm]=[0,0]; } g[0]+=v; g[1]+=m; }
+    const labName=(f[C.lab]||"").trim();
+    if(labName && labName!=="-"){
+      M.labTot[labName]=(M.labTot[labName]||0)+v;
+      if(isGeneric(labName)) d.gen[labName]=(d.gen[labName]||0)+v;
+    }
     if(!pharmName){ const fn=(f[C.farm]||"").trim(); if(fn) pharmName=fn; }
   }
   const cm=colab_codeFromMonths(out); if(cm) pharmCode=cm;
@@ -427,16 +441,20 @@ function aggregate(monthKeys){
   monthKeys.forEach(k=>{
     const M=DB.months[k]; if(!M) return;
     for(const c in M.colabs){
-      const s=M.colabs[c]; let d=colabs[c]; if(!d){ d=colabs[c]={v:0,m:0,q:0,a:0,gm:{}}; }
+      const s=M.colabs[c]; let d=colabs[c]; if(!d){ d=colabs[c]={v:0,m:0,q:0,a:0,gm:{},gen:{}}; }
       d.v+=s.v; d.m+=s.m; d.q+=s.q; d.a+=s.a;
       for(const g in s.gm){ if(!d.gm[g])d.gm[g]=[0,0]; d.gm[g][0]+=s.gm[g][0]; d.gm[g][1]+=s.gm[g][1]; }
+      if(s.gen) for(const l in s.gen){ d.gen[l]=(d.gen[l]||0)+s.gen[l]; }
     }
     tot.v+=M.tot[0]; tot.m+=M.tot[1]; tot.q+=M.tot[2]; tot.a+=M.tot[3];
   });
-  const arr=Object.keys(colabs).map(c=>{ const d=colabs[c]; return {
-    name:c, v:d.v, m:d.m, q:d.q, a:d.a, gm:d.gm,
-    mpct: d.v?d.m/d.v*100:0, vat: d.a?d.v/d.a:0, mat: d.a?d.m/d.a:0
-  };});
+  const arr=Object.keys(colabs).map(c=>{ const d=colabs[c];
+    const genV=Object.values(d.gen).reduce((a,b)=>a+b,0);
+    return {
+      name:c, v:d.v, m:d.m, q:d.q, a:d.a, gm:d.gm, gen:d.gen, genV,
+      msrm:(d.gm.MSRM&&d.gm.MSRM[0])||0,
+      mpct: d.v?d.m/d.v*100:0, vat: d.a?d.v/d.a:0, mat: d.a?d.m/d.a:0
+    };});
   arr.sort((x,y)=>y.v-x.v);
   arr.forEach((r,i)=>r.rank=i+1);
   return {colabs:arr, tot:{...tot, mpct:tot.v?tot.m/tot.v*100:0, vat:tot.a?tot.v/tot.a:0, mat:tot.a?tot.m/tot.a:0, n:arr.length}};
@@ -447,6 +465,14 @@ function monthlySeries(){
     key:k, v:M.tot[0], m:M.tot[1], q:M.tot[2], a:M.tot[3],
     mpct:M.tot[0]?M.tot[1]/M.tot[0]*100:0, vat:M.tot[3]?M.tot[0]/M.tot[3]:0, mat:M.tot[3]?M.tot[1]/M.tot[3]:0
   };});
+}
+function aggLabTot(monthKeys){ const o={}; monthKeys.forEach(k=>{ const M=DB.months[k]; if(!M||!M.labTot) return; for(const l in M.labTot) o[l]=(o[l]||0)+M.labTot[l]; }); return o; }
+function hasLabData(){ return availMonths().some(k=>DB.months[k].labTot && Object.keys(DB.months[k].labTot).length); }
+function monthlyGenericSeries(){
+  return availMonths().map(k=>{ const M=DB.months[k]; let g=0,ms=0;
+    for(const c in M.colabs){ const s=M.colabs[c]; if(s.gen) g+=Object.values(s.gen).reduce((a,b)=>a+b,0); ms+=(s.gm.MSRM&&s.gm.MSRM[0])||0; }
+    return {key:k, gen:g, msrm:ms, pct: ms?g/ms*100:0};
+  });
 }
 function colabMonthly(name){
   return availMonths().map(k=>{ const M=DB.months[k]; const s=M.colabs[name];
@@ -590,6 +616,7 @@ function render(){
   if(UI.tab==="equipa") renderEquipa(ctx);
   if(UI.tab==="colab") renderColab(ctx);
   if(UI.tab==="mercados") renderMercados(ctx);
+  if(UI.tab==="generic") renderGenericos(ctx);
   if(UI.tab==="acum") renderAcum(ctx);
 }
 
@@ -831,6 +858,70 @@ function renderAcum(){
      barChart(triLabels,triVals,{colors:triLabels.map((_,i)=>SERIES[i%SERIES.length]),valLabels:false,fmt:v=>UI.acumMetric==="v"||UI.acumMetric==="m"?Math.round(v/1000)+"k":UI.acumMetric==="mpct"?Math.round(v)+"%":Math.round(v),h:240,w:680})+`</div>`;
   $("#v-acum").innerHTML=h;
   $("#v-acum").querySelectorAll("[data-metric]").forEach(b=>b.onclick=()=>{ UI.acumMetric=b.dataset.metric; render(); });
+}
+
+/* ---------- GENÉRICOS / LABORATÓRIOS ---------- */
+function renderGenericos({months}){
+  if(!hasLabData()){
+    $("#v-generic").innerHTML=`<div class="card" style="text-align:center;padding:2.4rem 1.5rem">
+      <div style="font-size:2rem;margin-bottom:.6rem">🧪</div>
+      <h3 style="margin-bottom:.5rem">Reimporte para ativar a análise de laboratórios</h3>
+      <p class="mut" style="max-width:520px;margin:0 auto;line-height:1.55">Os dados guardados anteriormente não incluíam a coluna dos laboratórios. Clique em <b>＋ Importar dados</b> e volte a arrastar o ficheiro «dados operadores» — os indicadores de genéricos passam a ficar disponíveis.</p>
+      <button class="btn-primary" onclick="document.getElementById('btnImport').click()">＋ Importar dados</button>
+    </div>`;
+    return;
+  }
+  const agg=aggregate(months);
+  const labTot=aggLabTot(months);
+  const totalClass=Object.values(labTot).reduce((a,b)=>a+b,0)||0;
+  // top labs overall
+  const topLabs=Object.keys(labTot).map(l=>[l,labTot[l]]).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  // generic aggregation
+  const genColTot={}; agg.colabs.forEach(c=>{ for(const l in c.gen) genColTot[l]=(genColTot[l]||0)+c.gen[l]; });
+  const topGenLabs=Object.keys(genColTot).sort((a,b)=>genColTot[b]-genColTot[a]).slice(0,5);
+  const totalGen=agg.colabs.reduce((a,c)=>a+c.genV,0);
+  const totalMsrm=agg.colabs.reduce((a,c)=>a+c.msrm,0);
+  const nGenLabs=Object.keys(genColTot).length;
+
+  let h=`<div class="kpis">
+    <div class="kpi"><div class="lab">Vendas via lab. genéricos</div><div class="val">${fmtEur(totalGen)}</div><span class="delta flat">${fmtPct(totalClass?totalGen/totalClass*100:0)} das vendas c/ laboratório</span></div>
+    <div class="kpi"><div class="lab">% s/ vendas MSRM</div><div class="val">${fmtPct(totalMsrm?totalGen/totalMsrm*100:0)}</div><span class="delta flat">indicador por laboratório</span></div>
+    <div class="kpi"><div class="lab">Laboratórios de genéricos</div><div class="val">${nGenLabs}</div><span class="delta flat">com vendas no período</span></div>
+    <div class="kpi"><div class="lab">Laboratório líder</div><div class="val" style="font-size:1.15rem">${topLabs.length?esc(topLabs[0][0]):"—"}</div><span class="delta flat">${topLabs.length?fmtEur(topLabs[0][1]):""}</span></div>
+  </div>`;
+
+  // charts
+  h+=`<div class="chart-grid">`;
+  h+=`<div class="card chart-card" style="grid-column:span 2"><h4>Top Laboratórios — ${periodLabel(UI.type,UI.period)}</h4><div class="csub">vendas (s/ IVA) · laboratórios de genéricos a verde</div>`+
+     barChart(topLabs.map(l=>l[0]),topLabs.map(l=>l[1]),{colors:topLabs.map(l=>isGeneric(l[0])?"#3E8E5A":"var(--accent)"),valLabels:false,fmt:v=>Math.round(v/1000)+"k",h:250,w:640})+
+     `<div class="legend"><span><i style="background:#3E8E5A"></i>Laboratório de genéricos</span><span><i style="background:var(--accent)"></i>Outros laboratórios</span></div></div>`;
+  // evolution of generic %
+  const gs=monthlyGenericSeries(); const labels=gs.map(s=>monthShort(s.key));
+  const hiIdx=months.map(m=>gs.findIndex(s=>s.key===m)).filter(i=>i>=0);
+  h+=`<div class="card chart-card"><h4>Evolução — Genéricos / MSRM</h4><div class="csub">% das vendas MSRM através de lab. de genéricos</div>`+
+     lineChart(labels,[{name:"%",color:"#3E8E5A",vals:gs.map(s=>s.pct),width:2.4}],{hi:hiIdx,fmt:v=>Math.round(v)+"%",h:210})+`</div>`;
+  h+=`</div>`;
+
+  // per-collaborator table
+  h+=`<div class="subhead">Genéricos por colaborador — ${periodLabel(UI.type,UI.period)}</div>`;
+  const rows=agg.colabs.filter(c=>c.genV>0).sort((a,b)=>b.genV-a.genV);
+  h+=`<div class="tbl-wrap"><table class="data"><thead><tr>
+    <th class="l">Colaborador</th><th>Vendas Genéricos</th><th>% s/ MSRM</th>`+
+    topGenLabs.map(l=>`<th>${esc(l)}</th>`).join("")+`<th>Outros gen.</th></tr></thead><tbody>`;
+  rows.forEach((c,i)=>{
+    const outros=c.genV - topGenLabs.reduce((a,l)=>a+(c.gen[l]||0),0);
+    h+=`<tr><td class="l"><div class="name-cell"><span class="rankbadge" style="background:${RANK_COLORS[Math.min(i,6)]}">${i+1}</span> ${esc(displayName(c.name))}</div></td>
+      <td>${fmtEur(c.genV)}</td>
+      <td class="mut">${c.msrm?fmtPct(c.genV/c.msrm*100,0):"—"}</td>`+
+      topGenLabs.map(l=>`<td>${c.gen[l]?fmtEur(c.gen[l]):'<span class="mut">—</span>'}</td>`).join("")+
+      `<td class="mut">${outros>0.5?fmtEur(outros):"—"}</td></tr>`;
+  });
+  h+=`<tr class="total"><td class="l">TOTAL</td><td>${fmtEur(totalGen)}</td><td>${totalMsrm?fmtPct(totalGen/totalMsrm*100,0):"—"}</td>`+
+     topGenLabs.map(l=>`<td>${fmtEur(genColTot[l]||0)}</td>`).join("")+
+     `<td>${fmtEur(totalGen-topGenLabs.reduce((a,l)=>a+(genColTot[l]||0),0))}</td></tr>`;
+  h+=`</tbody></table></div>`;
+  h+=`<div class="note"><b>Nota metodológica:</b> esta análise identifica os medicamentos pelas marcas de laboratórios conhecidos por genéricos (Generis, Viatris, Teva, KRKA, Tecnimede, Bluepharma, Sandoz, …). É um <b>indicador por laboratório</b> e <b>não coincide</b> com a «% de Genéricos em Grupos Homogéneos» do relatório da ANF, que exige a marcação de genérico/GH ao nível do produto (não disponível neste export). Serve para comparar o perfil de dispensa de genéricos entre colaboradores e ao longo do tempo.</div>`;
+  $("#v-generic").innerHTML=h;
 }
 
 /* ---------- CSV export ---------- */

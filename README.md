@@ -24,7 +24,15 @@ relatório mensal de Recursos Humanos da ANF, mas de forma interativa e com hist
   atendimentos, venda/atendimento e margem/atendimento vs média da farmácia. Exportável para CSV.
 - **Evolutivo Colaborador** — evolução individual de cada colaborador vs média da farmácia.
 - **Grandes Mercados** — composição MSRM / MNSRM / PSBE / Outros por colaborador.
+- **Genéricos** — top laboratórios do período (genéricos destacados), vendas de genéricos por
+  colaborador (Generis, Viatris, Teva, KRKA, Tecnimede, …) e evolução da percentagem de genéricos.
+  É um indicador **por laboratório** — não substitui a «% de Genéricos em Grupos Homogéneos» da ANF,
+  que exige a marcação de genérico ao nível do produto (não disponível neste export).
 - **Acumulados** — comparação trimestral, semestral e homóloga (ano vs ano).
+
+> As **Avaliações de Desempenho** (slides 7 e 13 do relatório da ANF) não constam do export
+> «dados operadores» — vêm de outro domínio do Sifarma. Ficam por integrar caso esses dados
+> sejam disponibilizados.
 
 ### Notas
 - Os dados ficam guardados **apenas no navegador** (localStorage). Nada é enviado para a internet.
